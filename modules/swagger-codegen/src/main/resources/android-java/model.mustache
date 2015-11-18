@@ -15,56 +15,56 @@ import android.support.annotation.StringDef;
  **/{{/description}}
 @ApiModel(description = "{{{description}}}")
 public class {{classname}} {{#parent}}extends {{{parent}}}{{/parent}} {
-  {{#vars}}{{#isEnum}}
+    {{#vars}}{{#isEnum}}
 {{>enumClass}}
-  private @{{{datatypeWithEnum}}} String {{name}} = {{{defaultValue}}};{{/isEnum}}{{#items.isEnum}}{{#items}}
+    private @{{{datatypeWithEnum}}} String {{name}} = {{{defaultValue}}};{{/isEnum}}{{#items.isEnum}}{{#items}}
 {{>enumClass}}
-  private List<String> {{name}} = {{{defaultValue}}};
-  {{/items}}{{/items.isEnum}}
+    private List<String> {{name}} = {{{defaultValue}}};
+        {{/items}}{{/items.isEnum}}
 
-  {{^isEnum}}{{^items.isEnum}}private {{{datatypeWithEnum}}} {{name}} = {{{defaultValue}}};
-  {{/items.isEnum}}{{/isEnum}}{{/vars}}{{#vars}}
+    {{^isEnum}}{{^items.isEnum}}private {{{datatypeWithEnum}}} {{name}} = {{{defaultValue}}};
+    {{/items.isEnum}}{{/isEnum}}{{/vars}}{{#vars}}
 
-  /**{{#description}}
-   * {{{description}}}{{/description}}{{#minimum}}
-   * minimum: {{minimum}}{{/minimum}}{{#maximum}}
-   * maximum: {{maximum}}{{/maximum}}
-   **/
-  @ApiModelProperty({{#required}}required = {{required}}, {{/required}}value = "{{{description}}}")
-  {{#isEnum}}
-  public @{{{datatypeWithEnum}}} String {{getter}}() {
-    return {{name}};
-  }
-  public void {{setter}}(@{{{datatypeWithEnum}}} String {{name}}) {
-    this.{{name}} = {{name}};
-  }{{/isEnum}}
+    /**{{#description}}
+     * {{{description}}}{{/description}}{{#minimum}}
+     * minimum: {{minimum}}{{/minimum}}{{#maximum}}
+     * maximum: {{maximum}}{{/maximum}}
+     **/
+    @ApiModelProperty({{#required}}required = {{required}}, {{/required}}value = "{{{description}}}")
+    {{#isEnum}}
+    public @{{{datatypeWithEnum}}} String {{getter}}() {
+        return {{name}};
+    }
+    public void {{setter}}(@{{{datatypeWithEnum}}} String {{name}}) {
+        this.{{name}} = {{name}};
+    }{{/isEnum}}
 
-  {{#items.isEnum}}
-  public List<String> {{getter}}() {
-    return {{name}};
-  }
-  public void {{setter}} (List<String> {{name}}) {
-    this.{{name}} = {{name}};
-  }{{/items.isEnum}}
+    {{#items.isEnum}}
+    public List<String> {{getter}}() {
+        return {{name}};
+    }
+    public void {{setter}} (List<String> {{name}}) {
+        this.{{name}} = {{name}};
+    }{{/items.isEnum}}
 
-  {{^isEnum}}{{^items.isEnum}}
-  public {{{datatypeWithEnum}}} {{getter}}() {
-    return {{name}};
-  }
-  public void {{setter}}({{{datatypeWithEnum}}} {{name}}) {
-    this.{{name}} = {{name}};
-  }{{/items.isEnum}}{{/isEnum}}
+    {{^isEnum}}{{^items.isEnum}}
+    public {{{datatypeWithEnum}}} {{getter}}() {
+        return {{name}};
+    }
+    public void {{setter}}({{{datatypeWithEnum}}} {{name}}) {
+        this.{{name}} = {{name}};
+    }{{/items.isEnum}}{{/isEnum}}
 
-  {{/vars}}
-  @Override
-  public String toString()  {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class {{classname}} {\n");
-    {{#parent}}sb.append("  " + super.toString()).append("\n");{{/parent}}
-    {{#vars}}sb.append("  {{name}}: ").append({{name}}).append("\n");
-    {{/vars}}sb.append("}\n");
-    return sb.toString();
-  }
+    {{/vars}}
+    @Override
+    public String toString()  {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class {{classname}} {\n");
+        {{#parent}}sb.append("  " + super.toString()).append("\n");{{/parent}}
+        {{#vars}}sb.append("  {{name}}: ").append({{name}}).append("\n");
+        {{/vars}}sb.append("}\n");
+        return sb.toString();
+    }
 }
 {{/model}}
 {{/models}}

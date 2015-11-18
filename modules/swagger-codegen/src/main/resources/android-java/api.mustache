@@ -60,11 +60,9 @@ public class {{classname}} {
     String path = "{{path}}".replaceAll("\\{format\\}","json"){{#pathParams}}.replaceAll("\\{" + "{{baseName}}" + "\\}", apiInvoker.escapeString({{{paramName}}}.toString())){{/pathParams}};
 
     // query params
-    List<Pair> queryParams = new ArrayList<Pair>();
+    List<Pair> queryParams = new ArrayList<>();
     // header params
-    Map<String, String> headerParams = new HashMap<String, String>();
-    // form params
-    Map<String, String> formParams = new HashMap<String, String>();
+    Map<String, String> headerParams = new HashMap<>();
 
     {{#queryParams}}
     queryParams.addAll(ApiInvoker.parameterToPairs("{{#collectionFormat}}{{{collectionFormat}}}{{/collectionFormat}}", "{{baseName}}", {{paramName}}));
