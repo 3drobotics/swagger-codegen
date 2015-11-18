@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.File;
+import org.json.JSONObject;
 
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.MultipartBuilder;
@@ -21,8 +22,8 @@ import com.squareup.okhttp.RequestBody;
 
 {{#operations}}
 public class {{classname}} {
-  String basePath = "{{basePath}}";
-  ApiInvoker apiInvoker = ApiInvoker.getInstance();
+  private String basePath = "{{basePath}}";
+  private ApiInvoker apiInvoker = ApiInvoker.getInstance();
 
   public void addHeader(String key, String value) {
     getInvoker().addDefaultHeader(key, value);
@@ -48,7 +49,7 @@ public class {{classname}} {
 {{/allParams}}   * @return {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}}
    */
   public {{#returnType}}{{{returnType}}} {{/returnType}}{{^returnType}}void {{/returnType}} {{nickname}} ({{#allParams}}{{{dataType}}} {{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) throws ApiException {
-    Object postBody = {{#bodyParam}}{{paramName}}{{/bodyParam}}{{^bodyParam}}null{{/bodyParam}};
+    Object postBody = {{#bodyParam}}{{paramName}}{{/bodyParam}}{{^bodyParam}}new JSONObject(){{/bodyParam}};
     {{#allParams}}{{#required}}
     // verify the required parameter '{{paramName}}' is set
     if ({{paramName}} == null) {
@@ -73,14 +74,29 @@ public class {{classname}} {
     {{/headerParams}}
 
     {{#formParams}}{{#isFile}}
+    RequestBody requestBody = null;
     if ({{paramName}} != null) {
-      postBody = new MultipartBuilder().type(MultipartBuilder.FORM)
+      requestBody = new MultipartBuilder().type(MultipartBuilder.FORM)
           .addFormDataPart("{{baseName}}", {{paramName}}.getName(),
             RequestBody.create(MediaType.parse(mediaType), {{paramName}}))
           .build();
     }
+
+    try {
+        String response = apiInvoker.postMedia(basePath, path, queryParams, requestBody, headerParams);
+        if(response != null){
+            return {{#returnType}}({{{returnType}}}) ApiInvoker.deserialize(response, "{{returnContainer}}", {{returnBaseType}}.class){{/returnType}};
+        }
+        else {
+            return {{#returnType}}null{{/returnType}};
+        }
+        }catch (ApiException ex) {
+            throw ex;
+        }
+    }
     {{/isFile}}{{/formParams}}
 
+    {{^formParams}}{{^isFile}}
     try {
       String response = apiInvoker.invokeAPI(basePath, path, "{{httpMethod}}", queryParams, postBody, headerParams);
       if(response != null){
@@ -92,7 +108,7 @@ public class {{classname}} {
     } catch (ApiException ex) {
       throw ex;
     }
-  }
+  }{{/isFile}}{{/formParams}}
   {{/operation}}
 }
 {{/operations}}
