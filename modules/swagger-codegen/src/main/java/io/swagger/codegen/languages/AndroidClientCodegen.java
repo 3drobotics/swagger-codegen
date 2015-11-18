@@ -9,10 +9,17 @@ import io.swagger.codegen.SupportingFile;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.MapProperty;
 import io.swagger.models.properties.Property;
+import io.swagger.codegen.CodegenModel;
+import io.swagger.codegen.CodegenProperty;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -239,8 +246,6 @@ public class AndroidClientCodegen extends DefaultCodegen implements CodegenConfi
         supportingFiles.add(new SupportingFile("manifest.mustache", projectFolder, "AndroidManifest.xml"));
         supportingFiles.add(new SupportingFile("apiInvoker.mustache",
                 (sourceFolder + File.separator + invokerPackage).replace(".", java.io.File.separator), "ApiInvoker.java"));
-        supportingFiles.add(new SupportingFile("httpPatch.mustache",
-                (sourceFolder + File.separator + invokerPackage).replace(".", java.io.File.separator), "HttpPatch.java"));
         supportingFiles.add(new SupportingFile("jsonUtil.mustache",
                 (sourceFolder + File.separator + invokerPackage).replace(".", java.io.File.separator), "JsonUtil.java"));
         supportingFiles.add(new SupportingFile("apiException.mustache",
@@ -277,4 +282,83 @@ public class AndroidClientCodegen extends DefaultCodegen implements CodegenConfi
         this.sourceFolder = sourceFolder;
     }
 
+    @Override
+    public Map<String, Object> postProcessModels(Map<String, Object> objs) {
+        List<Object> models = (List<Object>) objs.get("models");
+        System.out.println();
+
+        for (Object _mo : models) {
+            Map<String, Object> mo = (Map<String, Object>) _mo;
+            System.out.println("mo: " + mo.toString());
+            CodegenModel cm = (CodegenModel) mo.get("model");
+            for (CodegenProperty var : cm.vars) {
+                Map<String, Object> allowableValues = var.allowableValues;
+
+                // handle ArrayProperty
+                if (var.items != null) {
+                    allowableValues = var.items.allowableValues;
+                }
+
+                if (allowableValues == null) {
+                    continue;
+                }
+                List<String> values = (List<String>) allowableValues.get("values");
+                if (values == null) {
+                    continue;
+                }
+
+                // put "enumVars" map into `allowableValues", including `name` and `value`
+                List<Map<String, String>> enumVars = new ArrayList<Map<String, String>>();
+                String commonPrefix = findCommonPrefixOfVars(values);
+                int truncateIdx = commonPrefix.length();
+                for (String value : values) {
+                    Map<String, String> enumVar = new HashMap<String, String>();
+                    String enumName;
+                    if (truncateIdx == 0) {
+                        enumName = value;
+                    } else {
+                        enumName = value.substring(truncateIdx);
+                        if ("".equals(enumName)) {
+                            enumName = value;
+                        }
+                    }
+                    enumVar.put("name", toEnumVarName(enumName));
+                    enumVar.put("value", value);
+                    enumVars.add(enumVar);
+                }
+                allowableValues.put("enumVars", enumVars);
+                System.out.println("objs " + allowableValues);
+                // handle default value for enum, e.g. available => StatusEnum.AVAILABLE
+                if (var.defaultValue != null) {
+                    String enumName = null;
+                    for (Map<String, String> enumVar : enumVars) {
+                        if (var.defaultValue.equals(enumVar.get("value"))) {
+                            enumName = enumVar.get("name");
+                            break;
+                        }
+                    }
+                    if (enumName != null) {
+                        var.defaultValue = var.datatypeWithEnum + "." + enumName;
+                    }
+                }
+            }
+        }
+        return objs;
+    }
+
+    private String findCommonPrefixOfVars(List<String> vars) {
+        String prefix = StringUtils.getCommonPrefix(vars.toArray(new String[vars.size()]));
+        // exclude trailing characters that should be part of a valid variable
+        // e.g. ["status-on", "status-off"] => "status-" (not "status-o")
+        return prefix.replaceAll("[a-zA-Z0-9]+\\z", "");
+    }
+
+    private String toEnumVarName(String value) {
+        String var = value.replaceAll("\\W+", "_").toUpperCase();
+        if (var.matches("\\d.*")) {
+            return "_" + var;
+        } else {
+            return var;
+        }
+    }
 }

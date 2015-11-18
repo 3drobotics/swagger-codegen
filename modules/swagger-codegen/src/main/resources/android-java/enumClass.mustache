@@ -1,0 +1,7 @@
+@StringDef({
+  {{#allowableValues}}{{#enumVars}}{{name}}{{^-last}},
+  {{/-last}}{{#-last}}{{/-last}}{{/enumVars}}{{/allowableValues}}
+})
+public @interface {{{datatypeWithEnum}}} {}
+{{#allowableValues}}{{#enumVars}}public static final String {{name}} = "{{value}}";
+{{/enumVars}}{{/allowableValues}}

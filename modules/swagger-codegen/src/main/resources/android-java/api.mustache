@@ -11,12 +11,13 @@ import java.util.*;
 {{#imports}}import {{import}};
 {{/imports}}
 
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-
 import java.util.Map;
 import java.util.HashMap;
 import java.io.File;
+
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
+import com.squareup.okhttp.RequestBody;
 
 {{#operations}}
 public class {{classname}} {
@@ -73,34 +74,17 @@ public class {{classname}} {
     headerParams.put("{{baseName}}", ApiInvoker.parameterToString({{paramName}}));
     {{/headerParams}}
 
-    String[] contentTypes = {
-      {{#consumes}}"{{mediaType}}"{{#hasMore}},{{/hasMore}}{{/consumes}}
-    };
-    String contentType = contentTypes.length > 0 ? contentTypes[0] : "application/json";
-
-    if (contentType.startsWith("multipart/form-data")) {
-      // file uploading
-      MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-      {{#formParams}}{{#notFile}}
-      if ({{paramName}} != null) {
-        builder.addTextBody("{{baseName}}", ApiInvoker.parameterToString({{paramName}}), ApiInvoker.TEXT_PLAIN_UTF8);
-      }
-      {{/notFile}}{{#isFile}}
-      if ({{paramName}} != null) {
-        builder.addBinaryBody("{{baseName}}", {{paramName}});
-      }
-      {{/isFile}}{{/formParams}}
-
-      HttpEntity httpEntity = builder.build();
-      postBody = httpEntity;
-    } else {
-      // normal form params
-      {{#formParams}}{{#notFile}}formParams.put("{{baseName}}", ApiInvoker.parameterToString({{paramName}}));{{/notFile}}
-      {{/formParams}}
+    {{#formParams}}{{#isFile}}
+    if ({{paramName}} != null) {
+      postBody = new MultipartBuilder().type(MultipartBuilder.FORM)
+          .addFormDataPart("{{baseName}}", {{paramName}}.getName(),
+            RequestBody.create(MediaType.parse(mediaType), {{paramName}}))
+          .build();
     }
+    {{/isFile}}{{/formParams}}
 
     try {
-      String response = apiInvoker.invokeAPI(basePath, path, "{{httpMethod}}", queryParams, postBody, headerParams, formParams, contentType);
+      String response = apiInvoker.invokeAPI(basePath, path, "{{httpMethod}}", queryParams, postBody, headerParams);
       if(response != null){
         return {{#returnType}}({{{returnType}}}) ApiInvoker.deserialize(response, "{{returnContainer}}", {{returnBaseType}}.class){{/returnType}};
       }

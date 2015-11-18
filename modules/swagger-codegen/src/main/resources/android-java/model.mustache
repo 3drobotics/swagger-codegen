@@ -5,6 +5,8 @@ package {{package}};
 
 import io.swagger.annotations.*;
 import com.google.gson.annotations.SerializedName;
+import android.support.annotation.StringDef;
+
 {{#models}}
 
 {{#model}}{{#description}}
@@ -14,30 +16,46 @@ import com.google.gson.annotations.SerializedName;
 @ApiModel(description = "{{{description}}}")
 public class {{classname}} {{#parent}}extends {{{parent}}}{{/parent}} {
   {{#vars}}{{#isEnum}}
-  public enum {{datatypeWithEnum}} {
-    {{#allowableValues}}{{#values}} {{.}}, {{/values}}{{/allowableValues}}
-  };
-  @SerializedName("{{baseName}}")
-  private {{{datatypeWithEnum}}} {{name}} = {{{defaultValue}}};{{/isEnum}}{{^isEnum}}
-  @SerializedName("{{baseName}}")
-  private {{{datatype}}} {{name}} = {{{defaultValue}}};{{/isEnum}}{{/vars}}
+{{>enumClass}}
+  private @{{{datatypeWithEnum}}} String {{name}} = {{{defaultValue}}};{{/isEnum}}{{#items.isEnum}}{{#items}}
+{{>enumClass}}
+  private List<String> {{name}} = {{{defaultValue}}};
+  {{/items}}{{/items.isEnum}}
 
-  {{#vars}}
+  {{^isEnum}}{{^items.isEnum}}private {{{datatypeWithEnum}}} {{name}} = {{{defaultValue}}};
+  {{/items.isEnum}}{{/isEnum}}{{/vars}}{{#vars}}
+
   /**{{#description}}
    * {{{description}}}{{/description}}{{#minimum}}
    * minimum: {{minimum}}{{/minimum}}{{#maximum}}
    * maximum: {{maximum}}{{/maximum}}
    **/
   @ApiModelProperty({{#required}}required = {{required}}, {{/required}}value = "{{{description}}}")
+  {{#isEnum}}
+  public @{{{datatypeWithEnum}}} String {{getter}}() {
+    return {{name}};
+  }
+  public void {{setter}}(@{{{datatypeWithEnum}}} String {{name}}) {
+    this.{{name}} = {{name}};
+  }{{/isEnum}}
+
+  {{#items.isEnum}}
+  public List<String> {{getter}}() {
+    return {{name}};
+  }
+  public void {{setter}} (List<String> {{name}}) {
+    this.{{name}} = {{name}};
+  }{{/items.isEnum}}
+
+  {{^isEnum}}{{^items.isEnum}}
   public {{{datatypeWithEnum}}} {{getter}}() {
     return {{name}};
   }
   public void {{setter}}({{{datatypeWithEnum}}} {{name}}) {
     this.{{name}} = {{name}};
-  }
+  }{{/items.isEnum}}{{/isEnum}}
 
   {{/vars}}
-
   @Override
   public String toString()  {
     StringBuilder sb = new StringBuilder();
