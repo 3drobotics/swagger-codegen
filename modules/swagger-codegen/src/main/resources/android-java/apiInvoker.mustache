@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import java.util.TimeZone;
 import android.util.Log;
@@ -210,9 +211,10 @@ public class ApiInvoker {
 
       //headerParams.put("Accept", "application/json");
       headerParams.put("Content-Type", "application/json");
+      headerParams.putAll(defaultHeaderMap);
       Headers.Builder headersBuilder = new Headers.Builder();
-      for (String key : headerParams.keySet()) {
-          headersBuilder.add(key, headerParams.get(key));
+      for (Entry<String, String> header : headerParams.entrySet()) {
+          headersBuilder.add(header.getKey(), header.getValue());
       }
 
       Response response = null;

@@ -285,11 +285,9 @@ public class AndroidClientCodegen extends DefaultCodegen implements CodegenConfi
     @Override
     public Map<String, Object> postProcessModels(Map<String, Object> objs) {
         List<Object> models = (List<Object>) objs.get("models");
-        System.out.println();
 
         for (Object _mo : models) {
             Map<String, Object> mo = (Map<String, Object>) _mo;
-            System.out.println("mo: " + mo.toString());
             CodegenModel cm = (CodegenModel) mo.get("model");
             for (CodegenProperty var : cm.vars) {
                 Map<String, Object> allowableValues = var.allowableValues;
@@ -327,7 +325,6 @@ public class AndroidClientCodegen extends DefaultCodegen implements CodegenConfi
                     enumVars.add(enumVar);
                 }
                 allowableValues.put("enumVars", enumVars);
-                System.out.println("objs " + allowableValues);
                 // handle default value for enum, e.g. available => StatusEnum.AVAILABLE
                 if (var.defaultValue != null) {
                     String enumName = null;
