@@ -261,9 +261,10 @@ public class ApiInvoker {
       HttpUrl httpUrl = createUrl(host, path, queryParams);
 
       //headerParams.put("Content-Type", "application/json");
+      headerParams.putAll(defaultHeaderMap);
       Headers.Builder headersBuilder = new Headers.Builder();
-      for (String key : headerParams.keySet()) {
-          headersBuilder.add(key, headerParams.get(key));
+      for (Entry<String, String> header : headerParams.entrySet()) {
+          headersBuilder.add(header.getKey(), header.getValue());
       }
 
       try {
